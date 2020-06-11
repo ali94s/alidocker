@@ -1,19 +1,38 @@
 package main
 
 import (
-	"newdocker/mydocker/container"
+	cgroups "newdocker/alidocker/cgroups"
+	"newdocker/alidocker/cgroups/subsystems"
+	"newdocker/alidocker/container"
 	"os"
+	"strings"
 
 	log "github.com/Sirupsen/logrus"
 )
 
-func Run(tty bool, command string) {
-	//版本1：创建容器进程
-	parent := container.NewParentProcess(tty, command)
-	//start先执行init 后执行传递的参数比如bash ls等命令
+func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
+	parent, writePipe := container.NewParentProcess(tty)
+	if parent == nil {
+		log.Errorf("New parent process error")
+		return
+	}
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
+	// use mydocker-cgroup as cgroup name
+	//设置CgroupManager，并且设置资源应用到cgroup
+	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
+	defer cgroupManager.Destroy()
+	cgroupManager.Set(res)
+	cgroupManager.Apply(parent.Process.Pid)
+
+	sendInitCommand(comArray, writePipe)
 	parent.Wait()
-	os.Exit(-1)
+}
+
+func sendInitCommand(comArray []string, writePipe *os.File) {
+	command := strings.Join(comArray, " ")
+	log.Infof("command all is %s", command)
+	writePipe.WriteString(command)
+	writePipe.Close()
 }

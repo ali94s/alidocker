@@ -1,0 +1,39 @@
+## 自己动手写docker
+
+通过go语言自己编写的一个docker程序
+
+
+## 技术应用
+
+- namespace 资源隔离
+
+通过namespace系统调用参数:
+
+|namespace类型|系统调用参数|
+|----|----|
+|Mount Namespace|CLONE_NEWNS|
+|UTS Namespace|CLONE_NEWUTS|
+|IPC Namespace|CLONE_NEWIPS|
+|PID Namespace|CLONE_NEWPID|
+|Network Namespace|CLONE_NEWNET|
+|USER Namespace|CLONE_NEWUSER|
+
+- cgroups 资源限制
+
+通过cgroups技术来实现资源限制，cgroups的三个组件：
+
+1.cgroup，对进程分组管理机制
+
+2.subsystem，一组资源控制模块主要用到：
+
+|组件名|作用|
+|----|----|
+|cpuset|设置cpu核心数| 
+|cpu,cpuacct|统计cpu的占用率| 
+|blkio|块设备的访问控制| 
+|memory|设置内存的使用| 
+|devices|控制对设备的访问| 
+|freezer|挂起和恢复cgroup中的进程| 
+|net_cls,net_prio|网络控制相关|
+
+3.hierarchy，降cgroup以树状结构组织

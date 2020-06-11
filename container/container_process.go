@@ -4,14 +4,20 @@ import (
 	"os"
 	"os/exec"
 	"syscall"
+
+	log "github.com/Sirupsen/logrus"
 )
 
 /*
-版本1：创建容器进程，把init和命令行命令传递给容器程序自己
+	版本2:使用管道进行参数传递
 */
-	func NewParentProcess(tty bool, command string) *exec.Cmd {
-	args := []string{"init", command}
-	cmd := exec.Command("/proc/self/exe", args...)
+func NewParentProcess(tty bool) (*exec.Cmd, *os.File) {
+	readPipe, writePipe, err := NewPipe()
+	if err != nil {
+		log.Errorf("New pipe error %v", err)
+		return nil, nil
+	}
+	cmd := exec.Command("/proc/self/exe", "init")
 	cmd.SysProcAttr = &syscall.SysProcAttr{
 		Cloneflags: syscall.CLONE_NEWUTS | syscall.CLONE_NEWPID | syscall.CLONE_NEWNS |
 			syscall.CLONE_NEWNET | syscall.CLONE_NEWIPC,
@@ -21,6 +27,16 @@ import (
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 	}
-	// fmt.Println(cmd)
-	return cmd
+	//外带着除了三个标准句柄之外的管道句柄，将管道的另一端传递给了子进程
+	cmd.ExtraFiles = []*os.File{readPipe}
+	return cmd, writePipe
+}
+
+//创建一个匿名管道，返回两个文件句柄 分别是读和写句柄
+func NewPipe() (*os.File, *os.File, error) {
+	read, write, err := os.Pipe()
+	if err != nil {
+		return nil, nil, err
+	}
+	return read, write, nil
 }
