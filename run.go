@@ -1,7 +1,7 @@
 package main
 
 import (
-	cgroups "newdocker/alidocker/cgroups"
+	"newdocker/alidocker/cgroups"
 	"newdocker/alidocker/cgroups/subsystems"
 	"newdocker/alidocker/container"
 	"os"
@@ -19,15 +19,16 @@ func Run(tty bool, comArray []string, res *subsystems.ResourceConfig) {
 	if err := parent.Start(); err != nil {
 		log.Error(err)
 	}
-	// use mydocker-cgroup as cgroup name
-	//设置CgroupManager，并且设置资源应用到cgroup
-	cgroupManager := cgroups.NewCgroupManager("mydocker-cgroup")
+	cgroupManager := cgroups.NewCgroupManager("donkey-cgroup")
 	defer cgroupManager.Destroy()
 	cgroupManager.Set(res)
 	cgroupManager.Apply(parent.Process.Pid)
-
 	sendInitCommand(comArray, writePipe)
 	parent.Wait()
+	mntURL := "/root/mnt/"
+	rootURL := "/root/"
+	container.DeleteWorkSpace(rootURL, mntURL)
+	os.Exit(0)
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {

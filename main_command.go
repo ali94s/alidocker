@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"newdocker/alidocker/cgroups/subsystems"
 	"newdocker/alidocker/container"
 
@@ -46,7 +45,6 @@ var runCommand = cli.Command{
 			CpuSet:      context.String("cpuset"),
 			CpuShare:    context.String("cpushare"),
 		}
-
 		Run(tty, cmdArray, resConf)
 		return nil
 	},

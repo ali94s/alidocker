@@ -27,7 +27,7 @@ func FindCgroupMountpoint(subsystem string) string {
 			if opt == subsystem {
 				//37 28 0:31 / /sys/fs/cgroup/memory rw,nosuid,nodev,noexec,relatime shared:19 - cgroup cgroup rw,memory
 				//返回挂载目录
-				fmt.Println("++++++++++++++++++++++", fields[4])
+				// fmt.Println("++++++++++++++++++++++", fields[4])
 				return fields[4]
 			}
 		}

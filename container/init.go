@@ -17,9 +17,9 @@ func RunContainerInitProcess() error {
 	if cmdArray == nil || len(cmdArray) == 0 {
 		return fmt.Errorf("Run container get user command error, cmdArray is nil")
 	}
-	//挂载文件系统
+
 	setUpMount()
-	//使用exec.LookPath()在系统的PATH下寻找命令的绝对路径，可以简写命令
+
 	path, err := exec.LookPath(cmdArray[0])
 	if err != nil {
 		log.Errorf("Exec loop path error %v", err)
@@ -32,9 +32,6 @@ func RunContainerInitProcess() error {
 	return nil
 }
 
-/*
-	通过管道读取父进程传递的参数
-*/
 func readUserCommand() []string {
 	pipe := os.NewFile(uintptr(3), "pipe")
 	msg, err := ioutil.ReadAll(pipe)
@@ -75,16 +72,19 @@ func pivotRoot(root string) error {
 	}
 	// 创建 rootfs/.pivot_root 存储 old_root
 	pivotDir := filepath.Join(root, ".pivot_root")
-	if err := os.Mkdir(pivotDir, 0777); err != nil {
-		return err
-	}
+	// if err := os.Mkdir(pivotDir, 0777); err != nil {
+	// 	fmt.Println("==create .pivot_root failed,err:", err)
+	// 	return err
+	// }
 	// pivot_root 到新的rootfs, 现在老的 old_root 是挂载在rootfs/.pivot_root
 	// 挂载点现在依然可以在mount命令中看到
 	if err := syscall.PivotRoot(root, pivotDir); err != nil {
+		fmt.Println("pivot_root failed,err:", err)
 		return fmt.Errorf("pivot_root %v", err)
 	}
 	// 修改当前的工作目录到根目录
 	if err := syscall.Chdir("/"); err != nil {
+		fmt.Println("=====切换根目录")
 		return fmt.Errorf("chdir / %v", err)
 	}
 
