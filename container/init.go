@@ -71,6 +71,7 @@ func pivotRoot(root string) error {
 		return fmt.Errorf("Mount rootfs to itself error: %v", err)
 	}
 	// 创建 rootfs/.pivot_root 存储 old_root
+	fmt.Println("root:", root)
 	pivotDir := filepath.Join(root, ".pivot_root")
 	// if err := os.Mkdir(pivotDir, 0777); err != nil {
 	// 	fmt.Println("==create .pivot_root failed,err:", err)
